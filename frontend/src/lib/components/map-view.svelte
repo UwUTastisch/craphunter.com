@@ -2,6 +2,7 @@
     import { onMount } from 'svelte';
     import 'leaflet/dist/leaflet.css';
     import type { Marker, Map as LeafletMap } from 'leaflet';
+    import { pb } from '$lib/pocketbase';
   
     let map: LeafletMap;
     const map_id = `map-${Date.now()}`;
@@ -19,13 +20,21 @@
       const L = await import('leaflet');
       map = L.map(map_id).setView([50.8464487, 8.0954997], 5.5);
       L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-  
+      console.log('fetching crap');
       await fetchCrap();
+
+      
+      console.log(crapItems);
       setInterval(fetchCrap, 5000);
     });
   
     async function fetchCrap() {
+      crapItems = await pb.collection('crap').getFullList({
+        //filter: "latitude>=0,longitude>=0"
+        expand: "craprecords",
+      });
       
+      renderMarkers();
     }
   
     async function renderMarkers() {
@@ -35,7 +44,8 @@
       const L = await import('leaflet');
       crapItems.forEach((c) => {
         const icon = new L.Icon({
-          iconUrl: '/icons/default-crap.png',
+          //iconUrl: 'http://127.0.0.1:8090/api/files/COLLECTION_ID_OR_NAME/RECORD_ID/FILENAME',
+          iconUrl: pb.files.getURL(c.expand.craprecords[0], c.expand.craprecords[0].image, {'thumb': '30x30'}),
           iconSize: [40, 40]
         });
         const marker = L.marker([c.latitude, c.longitude], { icon }).addTo(map);
