@@ -1,10 +1,11 @@
 <script lang="ts">
-    import { onMount } from 'svelte';
+    import { onMount, createEventDispatcher } from 'svelte';
     import 'leaflet/dist/leaflet.css';
     import type { Marker, Map as LeafletMap } from 'leaflet';
     import { pb } from '$lib/pocketbase';
   
     let map: LeafletMap;
+    const dispatch = createEventDispatcher();
     const map_id = `map-${Date.now()}`;
   
     let map_height = 0;
@@ -30,8 +31,9 @@
   
     async function fetchCrap() {
       crapItems = await pb.collection('crap').getFullList({
-        //filter: "latitude>=0,longitude>=0"
-        expand: "craprecords",
+        //filter: 'latitude >= "0" && longitude >= "0"',
+        filter: `latitude>=${map.getBounds().getSouth()} && latitude<=${map.getBounds().getNorth()} && longitude>=${map.getBounds().getWest()} && longitude<=${map.getBounds().getEast()}`,
+        expand: "crap_report",
       });
       
       renderMarkers();
@@ -45,10 +47,17 @@
       crapItems.forEach((c) => {
         const icon = new L.Icon({
           //iconUrl: 'http://127.0.0.1:8090/api/files/COLLECTION_ID_OR_NAME/RECORD_ID/FILENAME',
-          iconUrl: pb.files.getURL(c.expand.craprecords[0], c.expand.craprecords[0].image, {'thumb': '30x30'}),
+          iconUrl: pb.files.getURL(c.expand.crap_report[0], c.expand.crap_report[0].image, {'thumb': '30x30'}),
           iconSize: [40, 40]
         });
-        const marker = L.marker([c.latitude, c.longitude], { icon }).addTo(map);
+
+        const marker = L.marker([c.latitude, c.longitude], { icon })
+        .bindPopup(`<b>Crap #${c.id}</b><br>${c.description}`)
+        .on('click', () => {
+          console.log('crap', c);
+          dispatch('openCrap', c);
+        })
+        .addTo(map);
         markers.push(marker);
       });
     }

@@ -4,6 +4,5 @@
 
 <!-- This is the main home page content -->
 <div class="h-full w-full">
-	<!-- Render the map publicly -->
-	<MapView />
+	<p> HI </p>
 </div>
