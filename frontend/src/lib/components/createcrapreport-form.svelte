@@ -2,6 +2,7 @@
 
 
 import { pb } from '$lib/pocketbase';
+import { user } from '$lib/shared.svelte';
 
 let { latitude, longitude, crapRecord} = $props();
 
@@ -18,43 +19,51 @@ const data = {
 };
 */
 const crapReport = $state({
-    user: 'RELATION_RECORD_ID', // not for user input
-    status: 'FIRST_SEEN', // not for user input
-    description: '', // user input
-    tags: [], // user input if crapRecord is not null
+    user: "RELATION_RECORD_ID",
+    status: "FIRST_SEEN",
+    description: "test",
+    tags: [
+        "l6uj93z08188k7b"
+    ]
 });
 
 
 const crap = $state({
-    description: '',
+    description: '', // will be updated by user input
     latitude: latitude, // not for user input
     longitude: longitude, // not for user input
-    craprecords: [] // not for user input
+    crap_report: [""] // not for user input
 });
 
-async function createCrap() {
-    crap.description = crapReport.description;
-    crapRecord = await pb.collection('crap').create(crap);
-    console.log('Creating crap');
-}
-
 async function createCrapReport() {
-    console.log('Creating crap report');
+    if (!user.user) {
+        console.log('User not logged in');
+        return;
+    }
+    crapReport.user = user.user.userID;
     const crapReportRecord = await pb.collection('crap_report').create(crapReport);
     console.log('Creating crap report');
-    
+
     if (!crapRecord) {
-        crapRecord.crapreports = [crapReportRecord];
+        crap.crap_report = [crapReportRecord.id];
+        crap.description = crapReport.description;
         console.log('crapRecord is null, creating crap');
-        await createCrap();
+        
+        crapRecord = await pb.collection('crap').create(crap);
+        console.log('Creating crap');
     } else {
-        crapRecord.crapreports.push(crapReportRecord);
+        crap.description = crapRecord.description;
+        crap.latitude = crapRecord.latitude;
+        crap.longitude = crapRecord.longitude;
+        crap.crap_report = [crapReportRecord.id].concat(crapRecord.crap_report);
         console.log('crapRecord is not null, updating crap');
-        await pb.collection('crap').update(crapRecord);
+        crapRecord = await pb.collection('crap').update(crapRecord.id, crap);
     }
 }
 </script>
 
+
+{#if user.user}
 <form onsubmit="{createCrapReport}">
     <!-- description -->
     <div>
@@ -77,3 +86,6 @@ async function createCrapReport() {
     <!-- Submit -->
     <button onclick={createCrapReport} type="submit">Submit</button>
 </form>
+{:else}
+    <h1>Log in to create a crap report</h1>
+{/if}

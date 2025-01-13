@@ -1,10 +1,7 @@
 <script lang="ts">
-	import { createEventDispatcher } from 'svelte';
 	export let user: { user: string, nickname: string | null } | null = null; // e.g., { user: { userID, nickname } } or null
   
 	import { logout } from '$lib/pocketbase';
-
-	const dispatch = createEventDispatcher();
 
 	async function logout_F() {
 		// Clear the cookie
@@ -15,7 +12,9 @@
 	}
   
 	function openLoginForm() {
-	  dispatch('openLogin'); // The layout listens for this
+	  // move to the login page
+	  location.href = '/login';
+	  
 	}
   </script>
   

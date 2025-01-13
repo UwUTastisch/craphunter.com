@@ -4,7 +4,7 @@
 
     $: crapid = page.params.crapid;
 
-    import CreateCrapReportView from '$lib/components/createcrapreport-view.svelte';
+    import CreatecrapreportForm from '$lib/components/createcrapreport-form.svelte';
 
     import { pb } from '$lib/pocketbase';
 
@@ -26,7 +26,7 @@
   <h1>Create Crap Report for ID: {crapid}</h1>
   
   {#if crapRecord}
-    <CreateCrapReportView latitude=null longitude=null {crapRecord}/>
+    <CreatecrapreportForm latitude=null longitude=null {crapRecord}/>
   {:else}
     <p>Loading...</p>
   {/if}
