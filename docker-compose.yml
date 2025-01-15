@@ -1,0 +1,29 @@
+version: "3.9"
+
+services:
+  pocketbase:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      args:
+        - VERSION=0.23.12
+    container_name: pocketbase
+    ports:
+      - "8090:8090" # Map port 8090 on the host to port 8090 in the container
+    volumes:
+      - ./pb_data/:/pb_data/ # Mount the ./backend directory to the container
+
+  sveltekit:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        - PUBLIC_POCKETBASE_URL=https://pocketbase.craphunter.com # Set the Pocketbase URL for the SvelteKit app
+    container_name: sveltekit
+    ports:
+      - "80:4137"
+    volumes:
+      - ./frontend:/app # Mount the ./frontend directory to the container
+      - /app/node_modules # Avoid mounting node_modules to prevent host/container conflicts
+    depends_on:
+      - pocketbase # Ensure Pocketbase starts before SvelteKit

@@ -1,0 +1,34 @@
+FROM node:22-alpine
+
+RUN mkdir -p /app
+WORKDIR /app
+
+
+COPY package.json .
+COPY yarn.lock .
+RUN yarn install --frozen-lockfile
+
+ENV NODE_ENV=production
+#ENV HOST "0.0.0.0"
+# ENV PUBLIC_POCKETBASE_URL "http://pocketbase.craphunter.com"
+ARG PUBLIC_POCKETBASE_URL="https://pocketbase.craphunter.com"
+ENV PORT="4137"
+
+COPY . .
+
+RUN yarn build
+
+RUN rm -rf ./src ./static ./tests
+# Write the PUBLIC_POCKETBASE_URL from ENV to the .env file
+RUN echo "PUBLIC_POCKETBASE_URL=$PUBLIC_POCKETBASE_URL" > /app/.env
+
+
+EXPOSE ${PORT}
+
+#CMD [ "yarn", "start", "--host", "${HOST}", "--port", "${PORT}" ]
+
+#CMD [ "pnpm" , "start", "--host", "${HOST}", "--port", "${PORT}" ]
+
+#CMD [ "yarn", "preview", "--host", "${HOST}", "--port", "${PORT}" ]
+
+CMD [ "yarn", "preview", "--host", "0.0.0.0", "--port", "4137" ]
