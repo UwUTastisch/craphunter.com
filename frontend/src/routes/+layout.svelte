@@ -2,20 +2,21 @@
 	import '../app.css';
 	import NavBar from '$lib/components/nav-bar.svelte';
 	import ShellLayout from '$lib/components/shell-layout.svelte';
-  import { restoreAuthFromCookie, currentUser, pb} from '$lib/pocketbase';
+  import { restoreAuthFromCookie, restoreLocationFromCookie, currentUser, pb} from '$lib/pocketbase';
   import { onMount } from 'svelte';
 
-  import { user } from "$lib/shared.svelte.js";
+  import { userState } from "$lib/shared.svelte.js";
 
   onMount(() => {
         restoreAuthFromCookie();
+        restoreLocationFromCookie();
   });
 
 
   currentUser.subscribe
   (value => {
-    user.user = !value ? null : { userID: value.id, user: value.name, nickname: null };
-    console.log("user",user?.user);
+    userState.user = !value ? null : { userID: value.id, user: value.name, nickname: null };
+    console.log("user",userState?.user);
 
     // after the above you can also access the auth data from the authStore
     console.log("is valid" ,pb.authStore.isValid);
@@ -30,13 +31,13 @@
   </script>
   
   <!-- Global Nav -->
-  <NavBar user={user.user}/>
+  <NavBar user={userState.user}/>
   
   <!--
 	Our shell layout wraps the page content but includes a side/bottom panel for login or info.
 	We pass the page <slot /> into the shell layout so the page content isn't overwritten.
   -->
-  <ShellLayout user={user.user}>
+  <ShellLayout user={userState.user}>
 	<slot />
   </ShellLayout>
   

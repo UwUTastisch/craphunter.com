@@ -46,6 +46,7 @@ routerAdd("POST", "/api/myapp/initcrap", (e) => {
         "tags": [
             "RELATION_RECORD_ID"
         ],
+        "image": ""
     })
 
     e.bindBody(data)
@@ -70,6 +71,19 @@ routerAdd("POST", "/api/myapp/initcrap", (e) => {
     if (data.tags.length > 10) {
         return e.json(400, {"error": "Too many tags"})
     }
+    if (!data.image) {
+        return e.json(400, {"error": "Image not supported" , "image": data.image})
+    }
+    // Decode base64 image and check if it's a valid JPEG
+    let base64Image = data.image;
+    let buffer = Buffer.from(base64Image, 'base64');
+
+    // Check if the buffer is a valid JPEG
+    if (buffer[0] !== 0xFF || buffer[1] !== 0xD8 || buffer[buffer.length - 2] !== 0xFF || buffer[buffer.length - 1] !== 0xD9) {
+        return e.json(400, {"error": "Invalid JPEG image"});
+    }
+
+    let jpegfile = $filesystem.fileFromBytes(buffer, /*"image/jpeg",*/ "crap.jpg")
 
     // Create a new Crap Report record
     console.log("initcrap crap_report")
@@ -80,6 +94,7 @@ routerAdd("POST", "/api/myapp/initcrap", (e) => {
     cr_record.set("status", "FIRST_SEEN")
     cr_record.set("description", data.description)
     cr_record.set("tags", data.tags)
+    cr_record.set("image", jpegfile)
     $app.save(cr_record)
 
 

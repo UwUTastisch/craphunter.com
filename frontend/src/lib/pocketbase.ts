@@ -3,6 +3,7 @@ import { PUBLIC_POCKETBASE_URL } from '$env/static/public';
 import PocketBase from 'pocketbase';
 import { writable } from 'svelte/store';
 import { serialize } from 'cookie';
+import { locationState } from './shared.svelte';
 
 export const pb = new PocketBase(PUBLIC_POCKETBASE_URL);
 
@@ -60,6 +61,78 @@ export const restoreAuthFromCookie = () => {
     }
 };
 
+// Restore location from a cookie and ensure it is within valid boundaries
+export const restoreLocationFromCookie = () => {
+    // Ensure this code runs only in the browser
+    if (typeof window === 'undefined') return;
+
+    const cookies = document.cookie
+        .split('; ')
+        .reduce((acc: { [key: string]: string }, cookie) => {
+            const [key, value] = cookie.split('=');
+            acc[key] = value;
+            return acc;
+        }, {});
+
+    if (cookies.pb_location) {
+        try {
+            const locationData = JSON.parse(decodeURIComponent(cookies.pb_location));
+            const { latitude, longitude, view } = locationData;
+
+            // Ensure latitude and longitude are within valid boundaries
+            if (latitude >= -90 && latitude <= 90 && longitude >= -180 && longitude <= 180) {
+                locationState.location = { latitude, longitude, view };
+                console.log("Location restored from cookie:", locationData);
+            } else {
+                // Use modulo to wrap latitude and longitude within valid boundaries
+                locationState.location = {
+                    latitude: ((latitude + 90) % 180 + 180) % 180 - 90,
+                    longitude: ((longitude + 180) % 360 + 360) % 360 - 180,
+                    view
+                };
+                console.log("Location wrapped within valid boundaries:", locationState.location);
+            }
+        } catch (e) {
+            console.error("Error restoring location from cookie:", e);
+        }
+    }
+};
+
+/*
+export const restoreLocationFromCookie = () => {
+    // Ensure this code runs only in the browser
+    if (typeof window === 'undefined') return;
+
+    const cookies = document.cookie
+        .split('; ')
+        .reduce((acc: { [key: string]: string }, cookie) => {
+            const [key, value] = cookie.split('=');
+            acc[key] = value;
+            return acc;
+        }, {});
+
+    if (cookies.pb_location) {
+        try {
+            const locationData = JSON.parse(decodeURIComponent(cookies.pb_location));
+            locationState.location =  { latitude: locationData.latitude, longitude: locationData.longitude, view: locationData.view };
+            console.log("Location restored from cookie:", locationData);
+        } catch (e) {
+            console.error("Error restoring location from cookie:", e);
+        }
+    }
+}
+    */
+
+export const storeLocationToCookie = async () => {
+    // Ensure this code runs only in the browser
+    if (typeof window === 'undefined') return;
+
+    document.cookie = serialize('pb_location', JSON.stringify({
+        latitude: locationState.location.latitude,
+        longitude: locationState.location.longitude,
+        view: locationState.location.view
+    }), { path: '/', maxAge: 60 * 60 * 24 * 7, httpOnly: false });
+}
 
 // Refresh authentication token and update the cookie
 export const refreshAuth = async () => {

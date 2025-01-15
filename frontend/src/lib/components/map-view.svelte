@@ -2,7 +2,9 @@
 	import { onMount, createEventDispatcher } from 'svelte';
 	import 'leaflet/dist/leaflet.css';
 	import type { Marker, Map as LeafletMap } from 'leaflet';
-	import { pb } from '$lib/pocketbase';
+	import { pb, storeLocationToCookie } from '$lib/pocketbase';
+	import { locationState } from '$lib/shared.svelte';
+
 
 	let map: LeafletMap;
 	const dispatch = createEventDispatcher();
@@ -13,18 +15,35 @@
 	let crapItems: any[] = [];
 	let markers: Marker[] = [];
 
+
 	onMount(async () => {
 		map_height = window.innerHeight - 150;
 		// Example offset if you have a nav bar. Adjust as needed.
 		map_width = window.innerWidth;
 
 		const L = await import('leaflet');
-		map = L.map(map_id).setView([50.8464487, 8.0954997], 5.5);
+
+		console.log('locationState', locationState.location);
+		map = L.map(map_id).setView([locationState.location.latitude, locationState.location.longitude], locationState.location.view);
+
+		map.on('moveend', () => {
+			const center = map.getCenter();
+			locationState.location = {
+				latitude: center.lat,
+				longitude: center.lng,
+				view: map.getZoom()
+			};
+			//$inspect(locationState.location);
+			fetchCrap();
+			storeLocationToCookie();
+		});
+			
+		
 		L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-		console.log('fetching crap');
+		//console.log('fetching crap');
 		await fetchCrap();
 
-		console.log(crapItems);
+		//console.log(crapItems);
 		setInterval(fetchCrap, 5000);
 	});
 
