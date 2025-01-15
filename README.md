@@ -6,3 +6,6 @@
 https://github.com/pocketbase/pocketbase/releases
 
 ## SRY FOR MISSING DOCS, THIS IS FULLY IN DEVELOPMENT State!
+
+[LICENSE.md](LICENSE.md)
+
