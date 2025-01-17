@@ -1,5 +1,4 @@
 <script>
-	import { onMount } from 'svelte';
 	import { userState } from '$lib/shared.svelte';
 </script>
 
@@ -9,9 +8,9 @@
 		Report any crap you find and help keep communities clean.
 	</p>
 	<a
-		href={userState ? "/createcrapreport/location" : "/login"}
+		href={userState.user ? "/createcrapreport/location" : "/login"}
 		class="mt-4 inline-block bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600"
 	>
-		{userState ? "Create Crap Report" : "Login"}
+		{userState.user ? "Create Crap Report" : "Login"}
 	</a>
 </section>
