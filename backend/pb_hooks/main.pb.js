@@ -1,5 +1,5 @@
 // pb_hooks/main.pb.js
-
+/*
 routerAdd("GET", "/hello/{name}", (e) => {
     let name = e.request.pathValue("name")
 
@@ -29,7 +29,7 @@ routerAdd("POST", "/api/myapp/setting", (e) => {
     console.log("returning success")
     return e.json(200, {"success": true})
 },$apis.requireAuth())
-
+*/
 
 routerAdd("POST", "/api/myapp/initcrap", (e) => {
     let authRecord = e.auth
