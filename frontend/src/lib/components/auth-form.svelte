@@ -3,12 +3,11 @@
 
   import { initPasswordAuth, initRegistrationAuth } from '$lib/pocketbase';
 
-  let mode = $state('login');
+  let {mode='login', registerToken='' } = $props();
   let isLoading = $state(false);
   let email = $state('');
   let plainPassword = $state('');
   let nickname = $state('');
-  let registerToken = $state('');
   let errorAnimation = $state(0);
   type AuthErrorState = {
     password?: { message?: string };
