@@ -21,6 +21,12 @@
   <nav class="bg-gray-200 p-4 flex items-center justify-between">
 	<div class="font-bold text-xl">Crap Hunter</div>
 	<div>
+	  <a href="/" class="mr-4">Home</a>
+	  <a href="/createcrapreport/location" class="mr-4">Create Crap Report</a>
+	  <a href="https://github.com/UwUTastisch/craphunter.com" class="mr-4">GitHub</a>
+	</div>
+
+	<div>
 	  {#if user}
 		<span class="mr-4">Hello {user.nickname ?? user.user}!</span>
 		<button on:click={logout_F} class="bg-red-600 text-white px-3 py-1 rounded">
